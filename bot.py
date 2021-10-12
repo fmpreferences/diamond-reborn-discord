@@ -20,9 +20,7 @@ async def retrieve(
     AUTHOR_IDS = map(int, AUTHOR_IDS)
     print(ctx, tz, limit, AUTHOR_IDS)
     msgs = await ctx.channel.history(limit=4294967295).flatten()
-    filtered_msgs = [
-        m for m in msgs if m.author.id in AUTHOR_IDS
-    ]
+    filtered_msgs = [m for m in msgs if m.author.id in AUTHOR_IDS]
     print(filtered_msgs)
     filtered_msgs = list(
         reversed(filtered_msgs)
@@ -31,10 +29,14 @@ async def retrieve(
     for filtered_msg in filtered_msgs:
         creation = filtered_msg.created_at + datetime.timedelta(hours=tz)
         dateasstr = f"{creation:%d/%m/%Y}"  # %d, %m 2 digits %Y 4 digits
+        to_add = {
+                'user': filtered_msg.author.id,
+                'content': filtered_msg.content
+            }
         if dateasstr not in msg_json:  # check if there first to avoid keyerror
-            msg_json[dateasstr] = [filtered_msg.content]
+            msg_json[dateasstr] = [to_add]
         else:
-            msg_json[dateasstr].append(filtered_msg.content)
+            msg_json[dateasstr].append(to_add)
     with open(f'mymsgs{ctx.guild.name}{ctx.channel.name}.txt', 'w') as stuff:
         json.dump(msg_json, stuff, indent=4)
     await ctx.send(f'success\n{len(filtered_msgs)} messages')
